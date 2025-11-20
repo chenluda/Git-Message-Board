@@ -1,0 +1,23 @@
+{
+  "main": "index.html",
+  "preload": "preload/services.js",
+  "logo": "logo.png",
+  "development": {
+    "main": "http://localhost:5173"
+  },
+  "features": [
+    {
+      "code": "gitlab-commits",
+      "explain": "Git Message Board - GitLab 项目提交记录查看工具",
+      "cmds": [
+        "gitlab",
+        "git提交",
+        "提交记录",
+        "commit",
+        "commits",
+        "git消息",
+        "git message"
+      ]
+    }
+  ]
+}
