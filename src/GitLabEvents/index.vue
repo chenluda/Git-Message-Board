@@ -57,7 +57,7 @@
     </el-card>
 
     <!-- SHA Search Result -->
-    <el-card v-if="shaSearchLoading || shaSearchError || shaSearchResult" class="sha-result-card" shadow="hover">
+    <el-card v-if="shaSearchLoading || shaSearchError || shaSearchResult" class="sha-result-card" shadow="hover" @click="navigateToShaResult">
       <div v-if="shaSearchLoading" class="sha-search-loading">
         <el-icon class="loading-icon"><Loading /></el-icon>
         <p>正在查询提交...</p>
@@ -505,6 +505,13 @@ const openShaResultInGitLab = () => {
   if (!shaSearchProject.value || !shaSearchResult.value) return
   const commitUrl = `${shaSearchProject.value.web_url}/-/commit/${shaSearchResult.value.id}`
   window.open(commitUrl, '_blank')
+}
+
+const navigateToShaResult = () => {
+  if (!shaSearchProject.value || !shaSearchResult.value) return
+  const branch = shaSearchResultBranches.value[0] || ''
+  const project = shaSearchProject.value
+  emit('navigate-to-project-branch', { project, projectId: project.id, branch, commitId: shaSearchResult.value.id })
 }
 
 const formatTime = (dateString) => {

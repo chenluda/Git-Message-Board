@@ -14,6 +14,7 @@ const selectedProject = ref(null)
 const showEvents = ref(true)
 const activeProjectTab = ref<'commits' | 'pipelines'>('commits')
 const initialBranch = ref('')
+const scrollToCommitId = ref('')
 
 // 配置弹窗相关
 const configDialogVisible = ref(false)
@@ -112,7 +113,7 @@ const saveConfig = () => {
 // 已移除侧边栏“只看本人”相关逻辑，保留主区按钮
 
 // 从事件页跳转到指定项目/分支
-const handleNavigateToProjectBranch = async ({ project, projectId, branch }) => {
+const handleNavigateToProjectBranch = async ({ project, projectId, branch, commitId }) => {
   try {
     let proj = project || null
     if (!proj) {
@@ -134,6 +135,7 @@ const handleNavigateToProjectBranch = async ({ project, projectId, branch }) => 
     }
     selectedProject.value = proj
     initialBranch.value = branch || ''
+    scrollToCommitId.value = commitId || ''
     showEvents.value = false
     activeProjectTab.value = 'commits'
   } catch (e) {
@@ -186,7 +188,7 @@ const handleNavigateToProjectBranch = async ({ project, projectId, branch }) => 
         <div v-else-if="selectedProject" class="git-messages-container">
           <el-tabs v-model="activeProjectTab" class="project-tabs">
             <el-tab-pane label="提交记录" name="commits">
-              <GitLabCommits :project="selectedProject" :initialBranch="initialBranch" />
+              <GitLabCommits :project="selectedProject" :initialBranch="initialBranch" :scrollToCommitId="scrollToCommitId" />
             </el-tab-pane>
             <el-tab-pane label="流水线" name="pipelines">
               <GitLabPipelines :project="selectedProject" />

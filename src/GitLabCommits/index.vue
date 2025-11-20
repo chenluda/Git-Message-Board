@@ -267,13 +267,24 @@
         </div>
       </el-card>
 
+      <el-button
+        class="anchor-toggle"
+        circle
+        :icon="List"
+        type="primary"
+        @click="showAnchor = !showAnchor"
+        v-if="filteredCommits.length > 0"
+      />
+
       <!-- Anchor Navigation -->
-      <div class="anchor-navigation" v-if="filteredCommits.length > 0">
+      <div class="anchor-navigation" v-if="filteredCommits.length > 0" v-show="showAnchor">
         <el-anchor 
           :offset="80"
           type="underline"
           direction="vertical"
           :bound="20"
+          container=".app-container"
+          ref="commitAnchor"
         >
           <el-anchor-link
             v-for="(commit, index) in filteredCommits"
@@ -299,7 +310,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   DataLine, Link, Key, Refresh, Search, Loading, Document, User, Star, Share, Warning,
@@ -360,6 +371,9 @@ const selectedAuthor = ref('')
 const dateRange = ref([])
 const currentPage = ref(1)
 const hasMore = ref(true)
+const showAnchor = ref(false)
+
+const commitAnchor = ref(null)
 
 // 全局 AI 对话上下文由 App.vue 读取，此处仅推送上下文
 
@@ -377,6 +391,10 @@ const props = defineProps({
     default: null
   },
   initialBranch: {
+    type: String,
+    default: ''
+  },
+  scrollToCommitId: {
     type: String,
     default: ''
   }
@@ -403,6 +421,33 @@ const filteredCommits = computed(() => {
   }
   
   return filtered
+})
+
+const scrollToCommitIfNeeded = () => {
+  const id = props.scrollToCommitId
+  if (!id || filteredCommits.value.length === 0) return
+  const idx = filteredCommits.value.findIndex(c => c.id === id || c.short_id === id || (id && c.id && c.id.startsWith(id)))
+  if (idx < 0) return
+  const href = `#commit-${idx}`
+  nextTick(() => {
+    if (commitAnchor.value && typeof commitAnchor.value.scrollTo === 'function') {
+      commitAnchor.value.scrollTo(href)
+    } else {
+      const el = document.querySelector(href)
+      const container = document.querySelector('.app-container')
+      if (el && container) {
+        const offset = 80
+        const top = el.getBoundingClientRect().top + container.scrollTop - offset
+        container.scrollTo({ top, behavior: 'smooth' })
+      } else if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  })
+}
+
+watch([filteredCommits, () => props.scrollToCommitId], () => {
+  scrollToCommitIfNeeded()
 })
 
 // 获取项目分支列表
@@ -952,6 +997,30 @@ const openCommitInGitLab = (commit) => {
 .pagination {
   margin-top: 16px;
   text-align: center;
+}
+
+.anchor-toggle {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 1200;
+  width: 40px !important;
+  height: 40px !important;
+  box-shadow: 0 12px 24px #71afe5, 0 8px 10px #eff6fc;
+}
+
+.anchor-navigation {
+  position: fixed;
+  top: 140px;
+  right: 24px;
+  z-index: 1200;
+  width: 280px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  background: var(--el-bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  padding: 8px;
 }
 
 /* 响应式设计 */
